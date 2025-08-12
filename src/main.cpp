@@ -12,22 +12,45 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, SCL_PIN, SDA_PIN, U8X8_PIN_NON
 
 const uint8_t offsetX = 28;
 const uint8_t offsetY = 24;
+const uint8_t numLines = 1;
+const bool testPixels = false;
+const bool invertDisplay = false;
+const uint8_t brightness = 255;
+const unsigned long tickInterval = 1000;
+
 unsigned long counterValue = 0;
 unsigned long lastTick = 0;
-const unsigned long tickInterval = 500;
+char displayText[32];
 
-void drawTestFrame(uint8_t ox, uint8_t oy, unsigned long value) {
+void drawDisplay() {
     u8g2.clearBuffer();
-    u8g2.drawPixel(ox, oy);
-    u8g2.drawPixel(ox + USABLE_WIDTH - 1, oy);
-    u8g2.drawPixel(ox, oy + USABLE_HEIGHT - 1);
-    u8g2.drawPixel(ox + USABLE_WIDTH - 1, oy + USABLE_HEIGHT - 1);
-    char buf[32];
-    snprintf(buf, sizeof(buf), "offset %u,%u", ox, oy);
-    u8g2.setFont(u8g2_font_ncenB08_tr);
-    u8g2.drawStr(ox + 2, oy + 15, buf);
-    snprintf(buf, sizeof(buf), "%lu", value);
-    u8g2.drawStr(ox + 2, oy + 30, buf);
+    if (testPixels) {
+        u8g2.drawPixel(offsetX, offsetY);
+        u8g2.drawPixel(offsetX + USABLE_WIDTH - 1, offsetY);
+        u8g2.drawPixel(offsetX, offsetY + USABLE_HEIGHT - 1);
+        u8g2.drawPixel(offsetX + USABLE_WIDTH - 1, offsetY + USABLE_HEIGHT - 1);
+    }
+    
+    if (numLines == 1) {
+        u8g2.setFont(u8g2_font_logisoso32_tn);
+        snprintf(displayText, sizeof(displayText), "%lu", counterValue);
+        uint8_t textWidth = u8g2.getStrWidth(displayText);
+        uint8_t fontHeight = u8g2.getMaxCharHeight();
+        uint8_t x = offsetX + (USABLE_WIDTH - textWidth) / 2;
+        uint8_t y = offsetY + fontHeight;
+        u8g2.drawStr(x, y, displayText);
+    } else if (numLines == 2) {
+        u8g2.setFont(u8g2_font_10x20_tf);
+        snprintf(displayText, sizeof(displayText), "%lu", counterValue);
+        u8g2.drawStr(offsetX + 2, offsetY + 16, displayText);
+        u8g2.drawStr(offsetX + 2, offsetY + 36, "Line 2");
+    } else if (numLines == 3) {
+        u8g2.setFont(u8g2_font_8x13_tf);
+        snprintf(displayText, sizeof(displayText), "%lu", counterValue);
+        u8g2.drawStr(offsetX + 2, offsetY + 11, displayText);
+        u8g2.drawStr(offsetX + 2, offsetY + 24, "Line 2");
+        u8g2.drawStr(offsetX + 2, offsetY + 37, "Line 3");
+    }
     u8g2.sendBuffer();
 }
 
@@ -37,8 +60,10 @@ void setup() {
     u8g2.setI2CAddress(I2C_ADDR * 2);
     u8g2.begin();
     u8g2.setBusClock(400000UL);
+    u8g2.setContrast(brightness);
+    if (invertDisplay) u8g2.setDisplayRotation(U8G2_R2);
     delay(50);
-    drawTestFrame(offsetX, offsetY, counterValue);
+    drawDisplay();
 }
 
 void loop() {
@@ -46,7 +71,6 @@ void loop() {
     if (now - lastTick >= tickInterval) {
         lastTick = now;
         counterValue++;
-        drawTestFrame(offsetX, offsetY, counterValue);
+        drawDisplay();
     }
 }
-
