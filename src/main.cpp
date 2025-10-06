@@ -18,6 +18,8 @@ const bool invertDisplay = false;
 const uint8_t brightness = 255;
 const unsigned long tickInterval = 1000;
 
+int counterProgram = 1;
+bool toggle = false;
 unsigned long counterValue = 0;
 unsigned long lastTick = 0;
 char displayText[32];
@@ -30,15 +32,26 @@ void drawDisplay() {
         u8g2.drawPixel(offsetX, offsetY + USABLE_HEIGHT - 1);
         u8g2.drawPixel(offsetX + USABLE_WIDTH - 1, offsetY + USABLE_HEIGHT - 1);
     }
-    
     if (numLines == 1) {
-        u8g2.setFont(u8g2_font_logisoso32_tn);
-        snprintf(displayText, sizeof(displayText), "%lu", counterValue);
-        uint8_t textWidth = u8g2.getStrWidth(displayText);
-        uint8_t fontHeight = u8g2.getMaxCharHeight();
-        uint8_t x = offsetX + (USABLE_WIDTH - textWidth) / 2;
-        uint8_t y = offsetY + fontHeight;
-        u8g2.drawStr(x, y, displayText);
+        if (counterProgram == 0) {
+            u8g2.setFont(u8g2_font_logisoso32_tn);
+            snprintf(displayText, sizeof(displayText), "%lu", counterValue);
+            uint8_t textWidth = u8g2.getStrWidth(displayText);
+            uint8_t fontHeight = u8g2.getMaxCharHeight();
+            uint8_t x = offsetX + (USABLE_WIDTH - textWidth) / 2;
+            uint8_t y = offsetY + fontHeight;
+            u8g2.drawStr(x, y, displayText);
+        } else {
+            toggle = !toggle;
+            float temp = toggle ? 18.7f : 18.8f;
+            snprintf(displayText, sizeof(displayText), "%.1f", temp);
+            u8g2.setFont(u8g2_font_logisoso32_tn);
+            uint8_t textWidth = u8g2.getStrWidth(displayText);
+            uint8_t fontHeight = u8g2.getMaxCharHeight();
+            uint8_t x = offsetX + (USABLE_WIDTH - textWidth) / 2;
+            uint8_t y = offsetY + fontHeight;
+            u8g2.drawStr(x, y, displayText);
+        }
     } else if (numLines == 2) {
         u8g2.setFont(u8g2_font_10x20_tf);
         snprintf(displayText, sizeof(displayText), "%lu", counterValue);
